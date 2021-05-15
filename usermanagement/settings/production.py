@@ -61,9 +61,12 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 # admins
 SERVER_EMAIL = 'root@localhost.com'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMINS = (
-    ('Joseph', 'kazimoja.email@gmail.com'),
-)
+
+ADMINS = ()
+if os.environ.get('DEBUG_MODE') == 'False':
+    ADMINS = (
+        ('Joseph', 'kazimoja.email@gmail.com'),
+    )
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_FILE_PATH = os.path.join(BASE_DIR, '../logs/app-messages')

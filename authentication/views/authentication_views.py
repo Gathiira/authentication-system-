@@ -70,8 +70,8 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     {"details": "Invalid user profile"},
                     status=status.HTTP_401_UNAUTHORIZED)
 
-            phone_number = user_details.phonenum
-            if not bool(phone_number):
+            email = user_details.email
+            if not bool(email):
                 return Response(
                     {"details": "Invalid phone number. Kindly contact support"},
                     status=status.HTTP_401_UNAUTHORIZED)
@@ -79,7 +79,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
             # send_otp_to_email
             otp_sms_payload = {
                 "user": str(user_instance.id),
-                "send_to": phone_number,
+                "send_to": email,
                 "mode": "sms",
                 "module": "login",
                 "expiry_time": settings.OTP_EXPIRY_TIME
@@ -97,7 +97,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
 
             notification_payload = {
                 "subject": "LOGIN VERIFICATION CODE",
-                "recipients": [user_details.phonenum],
+                "recipients": [email],
                 "message": f"Your login verification code is {app_otp_code}",
             }
             #  send email
@@ -110,5 +110,9 @@ class AuthenticationViewSet(viewsets.ViewSet):
 
             if not settings.DEBUG:
                 app_otp_code = None
-            return Response({"details": "Otp generated successfully"})
+            return Response(
+                {
+                    "details": "Otp generated successfully",
+                    "otp_code": app_otp_code
+                })
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)

@@ -94,6 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=20, unique=True)
+    email = models.EmailField(unique=True, max_length=255)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -102,13 +103,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_defaultpassword = models.BooleanField(default=False)
     profile_photo = models.CharField(max_length=255, null=True, blank=True)
-    signature = JSONField(null=True, blank=True)
     enable_phone_notification = models.BooleanField(null=True, blank=True)
     enable_email_notification = models.BooleanField(null=True, blank=True)
-    enable_system_notification = models.BooleanField(null=True, blank=True)
+    enable_system_notification = models.BooleanField(default=True)
     primary_role = models.CharField(max_length=255, null=True, blank=True)
-    identification_type = models.CharField(
-        max_length=255, null=True, blank=True)
     date_registered = models.DateTimeField(auto_now=True)
     ACCOUNT_DEFAULT_STATUS = [
         ("ACTIVE", "ACTIVE"),
@@ -119,7 +117,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = "email"
 
     def __str__(self):
         return str(self.username)
