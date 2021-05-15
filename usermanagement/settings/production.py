@@ -44,3 +44,26 @@ if os.environ.get('TRANSFERPROTOCOL') is None:
 
 OTP_REGISTRATION_VERIFICATION = os.environ.get('OTP_REGISTRATION_VERIFICATION')
 MINIMUM_PASSWORD_LENGTH = int(os.environ.get('MINIMUM_PASSWORD_LENGTH'))
+
+
+SERVICE_URLS = {
+    'acl_service': os.environ.get('TRANSFER_PROTOCOL') + '://' + os.environ.get('ACL_SERVICE') + os.environ.get('API_VERSION')
+}
+
+
+#  email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+# admins
+SERVER_EMAIL = 'root@localhost.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ADMINS = (
+    ('Joseph', 'kazimoja.email@gmail.com'),
+)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_FILE_PATH = os.path.join(BASE_DIR, '../logs/app-messages')

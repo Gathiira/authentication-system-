@@ -15,10 +15,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
-api_version = 'api/v1'
+api_version = 'api/v1/'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path(api_version + 'accounts', include('authentication.urls'))
+    path(api_version + 'o/', include('oauth2_provider.urls',
+                                     namespace='oauth2_provider')),
+    path(api_version + 'accounts/', include('authentication.urls')),
+    path(api_version + 'mfa/', include('mfa.urls')),
+    path(api_version + 'notification/', include('notification.urls')),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
+    adminurl = [
+        path('admin/', admin.site.urls),
+    ]
+    urlpatterns += adminurl

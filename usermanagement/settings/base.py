@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-import logging
 
 load_dotenv()
 
@@ -19,8 +18,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'oauth2_provider',
-    'logging_middleware'
-
+    'logging_middleware',
+    'mfa',
+    'notification',
 ]
 
 MIDDLEWARE = [
@@ -63,18 +63,19 @@ WSGI_APPLICATION = 'usermanagement.wsgi.application'
 Overriding default authentication class
 '''
 REST_FRAMEWORK = {
+    "NON_FIELD_ERRORS_KEY": "details",
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
     ],
 
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.tokenbackend.SystemAuthentication',
-    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'authentication.tokenbackend.SystemAuthentication',
+    # ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
-    'DEFAULT_PAGINATION_CLASS':
-    'shared_functions.pagination_functions.StandardResultsSetPagination',
+    # 'DEFAULT_PAGINATION_CLASS':
+    # 'shared_functions.pagination_functions.StandardResultsSetPagination',
     # 'EXCEPTION_HANDLER': 'authentication.apiexception.custom_exception_handler'
 }
 AUTH_PASSWORD_VALIDATORS = [
@@ -135,7 +136,6 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-application_logger = logging.getLogger(__name__)
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': int(os.environ.get('ACCESS_TOKEN_EXPIRY')),
@@ -168,7 +168,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             # IMPORTANT: replace with your desired logfile name!
             # 'filename': os.path.join(BASE_DIR, '../logs/land_admin.log'),
-            'filename':  os.path.join(BASE_DIR, "logs/app.log"),
+            'filename':  os.path.join(BASE_DIR, "../logs/app.log"),
             'maxBytes': 50 * 10**6,  # will 50 MB do?
             'backupCount': 3,  # keep this many extra historical files
             'formatter': 'timestampthread'
@@ -176,6 +176,18 @@ LOGGING = {
         'console': {
             'level': min_django_level,  # this level or higher goes to the console
             'class': 'logging.StreamHandler',
+        },
+        'mail_admins': {
+            'level': min_django_level,
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': min_django_level,
+            'propagate': True,
         },
     },
     'root': {
