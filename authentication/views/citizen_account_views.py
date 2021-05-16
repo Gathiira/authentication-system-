@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class CitizenAccountViewSet(viewsets.GenericViewSet):
+    permission_classes = (permissions.AllowAny, )
 
     @action(
         methods=['POST'],

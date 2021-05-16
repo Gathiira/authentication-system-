@@ -68,15 +68,14 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'authentication.tokenbackend.SystemAuthentication',
-    # ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'authentication.tokenbackend.SystemAuthentication',
     ),
-    # 'DEFAULT_PAGINATION_CLASS':
-    # 'shared_functions.pagination_functions.StandardResultsSetPagination',
-    # 'EXCEPTION_HANDLER': 'authentication.apiexception.custom_exception_handler'
+    'DEFAULT_RENDERER_CLASSES': (
+        'shared_functions.renderer_functions.CustomRenderer',
+    ),
+    'DEFAULT_PAGINATION_CLASS':
+    'shared_functions.pagination_functions.StandardResultsSetPagination'
 }
 AUTH_PASSWORD_VALIDATORS = [
     {
