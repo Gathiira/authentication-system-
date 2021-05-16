@@ -112,7 +112,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 FIELD_ENCRYPTION_KEY = 'fiflN_F353HczfcXxxniJSzpvYR_C4-IIuXuNoQYjdY='
 ACCESS_TOKEN_EXPIRY_TIME = 2
 REFRESH_TOKEN_EXPIRY_TIME = 5
-TOKEN_SECRET_KEY = os.environ.get('TOKEN_SECRET_KEY')
+TOKEN_SECRET_KEY = os.environ.get('SECRET_KEY')
 CORS_ORIGIN_ALLOW_ALL = True
 if os.environ.get('CORS_ALLOW_ALL') == 'True':
     CORS_MODE = True

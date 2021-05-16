@@ -29,6 +29,11 @@ class VerifyOtpSerializer(ResendOtpSerializer):
     otp_code = serializers.CharField()
 
 
+class VerifyLoginOtpSerializer(GenericEmailSerializer):
+    otp_code = serializers.CharField()
+    password = serializers.CharField()
+
+
 class LoginSerializer(GenericEmailSerializer):
     password = serializers.CharField()
     usertype = serializers.CharField()
