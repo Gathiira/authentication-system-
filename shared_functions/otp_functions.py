@@ -23,7 +23,7 @@ def generate_otp_code():
 
 def verify_otp_code(otp, userid, module):
     code_query = mfa_models.CodeVerification.objects.filter(
-        code=otp, user=userid, module=module).exclude(status="REVOKED")
+        code=otp, user=userid, module=module).exclude(status="REVOKED")  # module=module
     if code_query.exists():
         if code_query.count() == 1:
             otp_details = code_query.first()

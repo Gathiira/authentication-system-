@@ -147,6 +147,7 @@ ACCESS_TOKEN_EXPIRY = int(os.environ.get('ACCESS_TOKEN_EXPIRY'))
 REGISTRATION_OTP_EXPIRY_TIME = int(
     os.environ.get('REGISTRATION_OTP_EXPIRY_TIME'))
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 min_django_level = 'INFO'
 

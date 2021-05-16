@@ -28,6 +28,20 @@ class ServiceResponseManager:
             log.error(e)
             return False, "Failed to generate otp code"
 
+    def verify_otp_code(self, payload):
+        url = self.acl_service + 'mfa/otp/verify-otp-code'
+        try:
+            response = requests.post(url, json=payload)
+
+            if response.status_code == 200:
+                return True, response.json()
+            else:
+                log.error(response.text)
+                return False, response.json()
+        except Exception as e:
+            log.error(e)
+            return False, "Failed to verify otp code"
+
     def send_email(self, payload):
         url = self.acl_service + "notification/email/send-email"
         try:

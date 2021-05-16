@@ -31,17 +31,17 @@ class AuthenticationViewSet(viewsets.ViewSet):
         payload = request.data
         serializer = auth_serializers.LoginSerializer(data=payload)
         if serializer.is_valid(raise_exception=True):
-            username = serializer.data.get("username")
+            email = serializer.data.get("email")
             password = serializer.data.get("password")
             account_usertype = serializer.data.get("usertype")
 
-            user = authenticate(username=username, password=password)
+            user = authenticate(email=email, password=password)
             if not bool(user):
                 return Response(
-                    {"details": "invalid username or password"},
+                    {"details": "invalid email or password. If registered, Kinldy consider validating your email."},
                     status=status.HTTP_401_UNAUTHORIZED)
 
-            user_instance = get_user_model().objects.get(username=username)
+            user_instance = get_user_model().objects.get(email=email)
             user_category_type = user_instance.usertype
             user_category = user_category_type.category
             user_category_mapping = user_category.user_mapping
@@ -70,30 +70,22 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     {"details": "Invalid user profile"},
                     status=status.HTTP_401_UNAUTHORIZED)
 
-            email = user_details.email
-            if not bool(email):
-                return Response(
-                    {"details": "Invalid phone number. Kindly contact support"},
-                    status=status.HTTP_401_UNAUTHORIZED)
-
-            # send_otp_to_email
-            otp_sms_payload = {
+            # send_otp_to_email]
+            otp_payload = {
                 "user": str(user_instance.id),
                 "send_to": email,
-                "mode": "sms",
-                "module": "login",
+                "mode": "email",
+                "module": "LOGIN",
                 "expiry_time": settings.OTP_EXPIRY_TIME
             }
+            otp_generated, otp_response = service_response.generate_otp_code(
+                otp_payload)
 
-            queue_sms, message_inf = service_response.generate_otp_code(
-                **otp_sms_payload)
-            if not queue_sms:
+            if not otp_generated:
                 return Response(
                     {"details": "Otp generation failed"},
                     status=status.HTTP_400_BAD_REQUEST)
-            app_otp_code = message_inf['code']
-            otp_expiry_time = message_inf['expiry_time']
-            time_stamp = time_function.convert_to_timestamp(otp_expiry_time)
+            app_otp_code = otp_response['code']
 
             notification_payload = {
                 "subject": "LOGIN VERIFICATION CODE",

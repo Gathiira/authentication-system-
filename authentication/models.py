@@ -144,9 +144,7 @@ class AccountVerificationLevel(models.Model):
     userid = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="account_verification_level",
-        blank=True,
-        null=True,
+        related_name="account_verification_level"
     )
     verification_level = models.CharField(
         choices=VERIFICATION_LEVELS,
@@ -202,13 +200,9 @@ class PublicUserProfile(models.Model):
     userid = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="public_user",
-        blank=True,
-        null=True,
+        related_name="public_user"
     )
-    email = models.EmailField(null=True, blank=True)
     phonenum = models.CharField(max_length=1000, blank=True, null=True)
-    fullname = models.CharField(max_length=1000, blank=True, null=True)
     firstname = models.CharField(max_length=1000, blank=True, null=True)
     middlename = models.CharField(max_length=1000, blank=True, null=True)
     lastname = models.CharField(max_length=1000, blank=True, null=True)
@@ -220,7 +214,7 @@ class PublicUserProfile(models.Model):
     date_registered = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.fullname)
+        return str(self.userid.email)
 
 
 class TeamCategory(models.Model):
@@ -270,9 +264,7 @@ class TeamAccountUsers(models.Model):
     user_account = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="team_user_account",
-        null=True,
-        blank=True,
+        related_name="team_user_account"
     )
     team_account = models.ForeignKey(
         TeamAccount,
@@ -349,13 +341,11 @@ class Staff(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     userid = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name="staff_user",
-        null=True, blank=True
+        related_name="staff_user"
     )
     firstname = models.CharField(max_length=255, null=True, blank=True)
     middlename = models.CharField(max_length=255, null=True, blank=True)
     lastname = models.CharField(max_length=255, null=True, blank=True)
-    # fullname = models.CharField(max_length=500,null=True, blank=True)
     user_designation = models.ForeignKey(
         Designation,
         on_delete=models.CASCADE,
@@ -373,7 +363,6 @@ class Staff(models.Model):
     employeenum = models.CharField(
         max_length=255, unique=True, null=True, blank=True)
     phonenum = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
     user_department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
@@ -417,7 +406,6 @@ class CodeVerification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     userid = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
-    email = models.EmailField(blank=True, null=True)
     phonenum = models.IntegerField(blank=True, null=True)
     code = models.IntegerField(blank=True, null=True)
     generationtime = models.DateTimeField()
@@ -435,9 +423,7 @@ class GroupProfile(models.Model):
     userid = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="group_user",
-        blank=True,
-        null=True,
+        related_name="group_user"
     )
     teamid = models.ForeignKey(
         TeamAccount,
@@ -451,7 +437,6 @@ class GroupProfile(models.Model):
         max_length=255, null=True, blank=True)
     phonenum = models.CharField(max_length=255, null=True, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
-    email = models.EmailField(unique=True, null=True, blank=True)
     date_registered = models.DateTimeField(auto_now=True)
 
     class Meta:
