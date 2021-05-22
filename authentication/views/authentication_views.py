@@ -9,6 +9,7 @@ from django.apps import apps as system_apps
 from django.conf import settings
 
 from oauth2_provider.models import get_application_model, get_refresh_token_model
+from oauth2_provider.views.generic import ProtectedResourceView
 
 
 from authentication import serializers as auth_serializers
@@ -188,3 +189,16 @@ class AuthenticationViewSet(viewsets.ModelViewSet):
             }
             return Response({"details": user_info}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AuthorizationViewSet(ProtectedResourceView, viewsets.ViewSet):
+    permission_classes = (permissions.IsAuthenticated, )
+
+    @action(
+        methods=['GET'],
+        detail=False,
+        url_path='auth-status',
+        url_name='auth-status'
+    )
+    def authentication_status(self, request):
+        return Response({"details": "success"})
