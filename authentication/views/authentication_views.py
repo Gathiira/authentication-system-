@@ -23,7 +23,7 @@ application_label = 'authentication'
 log = logging.getLogger(__name__)
 
 
-class AuthenticationViewSet(viewsets.ModelViewSet):
+class AuthenticationViewSet(viewsets.ViewSet):
     permission_classes = (permissions.AllowAny, )
 
     @action(

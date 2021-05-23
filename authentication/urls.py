@@ -10,8 +10,8 @@ auth_url = 'auth'
 router.register(
     auth_url, authentication_views.AuthenticationViewSet, basename='auth')
 router.register(
-    auth_url, authentication_views.AuthorizationViewSet, basename='auth')
+    auth_url, citizen_account_views.CitizenAccountViewSet, basename='auth')
 router.register(
-    "public", citizen_account_views.CitizenAccountViewSet, basename='public')
+    auth_url, authentication_views.AuthorizationViewSet, basename='auth')
 
 urlpatterns = router.urls
