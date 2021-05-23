@@ -72,7 +72,7 @@ REST_FRAMEWORK = {
         'authentication.tokenbackend.SystemAuthentication',
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'shared_functions.renderer_functions.CustomRenderer',
+        'rest_framework.renderers.JSONRenderer',
     ),
     'DEFAULT_PAGINATION_CLASS':
     'shared_functions.pagination_functions.StandardResultsSetPagination'
