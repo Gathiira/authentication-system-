@@ -10,7 +10,7 @@ class CustomRenderer(renderers.JSONRenderer):
         response = ''
 
         if 'ErrorDetail' in str(data):
-            response = json.dumps({'details': data})
+            response = json.dumps(data)
         else:
-            response = json.dumps({"details": data})
+            response = json.dumps(data)
         return response
