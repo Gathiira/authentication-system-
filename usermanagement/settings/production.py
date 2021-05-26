@@ -7,31 +7,31 @@ elif os.environ.get('DEBUG_MODE') == 'False':
     DEBUG = False
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USERNAME'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'OPTIONS': {
-            'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
-        },
-        'HOST': str(os.environ.get('DATABASE_HOST')),
-        'PORT': int(os.environ.get('DATABASE_PORT')),
-        'TEST': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME':  os.environ.get('DATABASE_NAME'),
-            'USER': os.environ.get('DATABASE_USERNAME'),
-            'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-            'OPTIONS': {
-                'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
-            },
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': os.getenv('DATABASE_NAME'),
+#         'USER': os.environ.get('DATABASE_USERNAME'),
+#         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+#         'OPTIONS': {
+#             'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
+#         },
+#         'HOST': str(os.environ.get('DATABASE_HOST')),
+#         'PORT': int(os.environ.get('DATABASE_PORT')),
+#         'TEST': {
+#             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#             'NAME':  os.environ.get('DATABASE_NAME'),
+#             'USER': os.environ.get('DATABASE_USERNAME'),
+#             'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+#             'OPTIONS': {
+#                 'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
+#             },
 
-        },
-        'ATOMIC_REQUESTS': True
+#         },
+#         'ATOMIC_REQUESTS': True
 
-    }
-}
+#     }
+# }
 
 
 prod_db = dj_database_url.config(conn_max_age=500)
