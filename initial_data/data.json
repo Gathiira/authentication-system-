@@ -1,0 +1,83 @@
+[
+{
+    "model": "authentication.usercategory",
+    "pk": "7e73a50e-394b-4db2-9efa-4a2c4153eed1",
+    "fields": {
+        "name": "STAFF",
+        "user_mapping": "STAFF"
+    }
+},
+{
+    "model": "authentication.usercategory",
+    "pk": "89c6c53e-50ae-401d-9a6b-6c7ca831941b",
+    "fields": {
+        "name": "PUBLICUSER",
+        "user_mapping": "PUBLICUSER"
+    }
+},
+{
+    "model": "authentication.usercategory",
+    "pk": "8ef67dcf-ae88-4570-a16d-e317c42437c3",
+    "fields": {
+        "name": "PROFESSIONAL",
+        "user_mapping": "PROFESSIONAL"
+    }
+},
+{
+    "model": "authentication.usergroup",
+    "pk": 1,
+    "fields": {
+        "group": 1,
+        "user_category": "89c6c53e-50ae-401d-9a6b-6c7ca831941b",
+        "user_department": null
+    }
+},
+{
+    "model": "authentication.usergroup",
+    "pk": 2,
+    "fields": {
+        "group": 3,
+        "user_category": "7e73a50e-394b-4db2-9efa-4a2c4153eed1",
+        "user_department": null
+    }
+},
+{
+    "model": "authentication.usergroup",
+    "pk": 3,
+    "fields": {
+        "group": 2,
+        "user_category": "7e73a50e-394b-4db2-9efa-4a2c4153eed1",
+        "user_department": null
+    }
+},
+{
+    "model": "authentication.usercategorytype",
+    "pk": "4431bb8d-4d0e-443f-a059-9f21cb7716b3",
+    "fields": {
+        "name": "STAFF",
+        "category": "7e73a50e-394b-4db2-9efa-4a2c4153eed1",
+        "model_name": "Staff",
+        "serializer": "StaffUserSerializer"
+    }
+},
+{
+    "model": "authentication.usercategorytype",
+    "pk": "ac9c9355-1d27-4079-b76d-02c670305b88",
+    "fields": {
+        "name": "ACCOUNTANT",
+        "category": "8ef67dcf-ae88-4570-a16d-e317c42437c3",
+        "model_name": "PublicUserProfile",
+        "serializer": "PublicUserSerializer"
+    }
+},
+{
+    "model": "authentication.usercategorytype",
+    "pk": "ed79bd50-36f0-49ae-ba08-4342ba5dc667",
+    "fields": {
+        "name": "PUBLICUSER",
+        "category": "89c6c53e-50ae-401d-9a6b-6c7ca831941b",
+        "model_name": "PublicUserProfile",
+        "serializer": "PublicUserSerializer"
+    }
+}
+]
