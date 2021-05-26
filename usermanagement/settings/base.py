@@ -1,5 +1,6 @@
 import os
-
+import django_heroku
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,6 +27,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,12 +104,21 @@ USE_L10N = True
 USE_TZ = False
 
 AUTH_USER_MODEL = 'authentication.User'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = '/static/'
 
-MEDIA_URL = '/media/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+
 FIELD_ENCRYPTION_KEY = 'fiflN_F353HczfcXxxniJSzpvYR_C4-IIuXuNoQYjdY='
 ACCESS_TOKEN_EXPIRY_TIME = 2
 REFRESH_TOKEN_EXPIRY_TIME = 5
@@ -195,3 +206,6 @@ LOGGING = {
         'level': min_level,  # this level or higher goes to the console,
     },
 }
+
+
+django_heroku.settings(locals())

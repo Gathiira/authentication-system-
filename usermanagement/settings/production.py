@@ -33,6 +33,10 @@ DATABASES = {
     }
 }
 
+
+prod_db = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(prod_db)
+
 OTP_EXPIRY_TIME = int(os.getenv('OTP_EXPIRY_TIME'))
 OTP_PASSWORD_RESET_TIME = int(os.getenv('OTP_PASSWORD_RESET_TIME'))
 
