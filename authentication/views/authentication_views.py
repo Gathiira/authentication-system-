@@ -36,17 +36,17 @@ class AuthenticationViewSet(viewsets.ViewSet):
         payload = request.data
         serializer = auth_serializers.LoginSerializer(data=payload)
         if serializer.is_valid(raise_exception=True):
-            email = serializer.data.get("email")
+            phone_number = serializer.data.get("phone_number")
             password = serializer.data.get("password")
             account_usertype = serializer.data.get("usertype")
 
-            user = authenticate(email=email, password=password)
+            user = authenticate(phone_number=phone_number, password=password)
             if not bool(user):
                 return Response(
-                    {"details": "invalid email or password. If registered, Kinldy consider validating your email."},
+                    {"details": "invalid phone number or password. If registered, Kinldy consider validating your phone number."},
                     status=status.HTTP_401_UNAUTHORIZED)
 
-            user_instance = get_user_model().objects.get(email=email)
+            user_instance = get_user_model().objects.get(phone_number=phone_number)
             user_category_type = user_instance.usertype
             user_category = user_category_type.category
             user_category_mapping = user_category.user_mapping
@@ -78,8 +78,8 @@ class AuthenticationViewSet(viewsets.ViewSet):
             # send_otp_to_email]
             otp_payload = {
                 "user": str(user_instance.id),
-                "send_to": email,
-                "mode": "email",
+                "send_to": phone_number,
+                "mode": "sms",
                 "module": "LOGIN",
                 "expiry_time": settings.OTP_EXPIRY_TIME
             }
@@ -92,17 +92,29 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST)
             app_otp_code = otp_response['code']
 
-            notification_payload = {
-                "subject": "LOGIN VERIFICATION CODE",
-                "recipients": [email],
-                "message": f"Your login verification code is {app_otp_code}",
-            }
-            #  send email
+            # notification_payload = {
+            #     "subject": "LOGIN VERIFICATION CODE",
+            #     "recipients": [email],
+            #     "message": f"Your login verification code is {app_otp_code}",
+            # }
+            # #  send email
 
-            sending_mail = service_response.send_email(notification_payload)
-            if not sending_mail:
+            # sending_mail = service_response.send_email(notification_payload)
+            # if not sending_mail:
+            #     return Response(
+            #         {"details": "Failed to send mail. Check your mail or internet connection"},
+            #         status=status.HTTP_401_UNAUTHORIZED)
+
+            # send sms
+            sms_payload = {
+                "phone": phone_number,
+                "message": f"Your Ardhisasa login verification code is: {app_otp_code}"
+            }
+
+            sending_sms = service_response.send_bulk_sms(sms_payload)
+            if not sending_sms:
                 return Response(
-                    {"details": "Failed to send mail. Check your mail or internet connection"},
+                    {"details": "Failed to send sms. Check your phone number."},
                     status=status.HTTP_401_UNAUTHORIZED)
 
             if not settings.DEBUG:
@@ -124,12 +136,12 @@ class AuthenticationViewSet(viewsets.ViewSet):
         payload = request.data
         serializer = auth_serializers.VerifyLoginOtpSerializer(data=payload)
         if serializer.is_valid(raise_exception=True):
-            email = serializer.data.get("email")
+            phone_number = serializer.data.get("phone_number")
             password = serializer.data.get("password")
             otp_code = serializer.data.get("otp_code")
 
             try:
-                user_details = get_user_model().objects.get(email=email)
+                user_details = get_user_model().objects.get(phone_number=phone_number)
             except Exception as e:
                 log.error(e)
                 return Response(
@@ -150,10 +162,10 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     {"details": response_inf['details']},
                     status=status.HTTP_400_BAD_REQUEST)
 
-            user = authenticate(email=email, password=password)
+            user = authenticate(phone_number=phone_number, password=password)
             if not bool(user):
                 return Response(
-                    {"details": "Invalid email or password"},
+                    {"details": "Invalid phone number or password"},
                     status=status.HTTP_401_UNAUTHORIZED)
             try:
                 selected_user = get_application_model().objects.get(user=user_details)
@@ -168,7 +180,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
                 server_address,
                 data={
                     "grant_type": 'password',
-                    'username': email,
+                    'username': phone_number,
                     "password": password,
                     'client_id': selected_user.client_id,
                     'client_secret': selected_user.client_secret

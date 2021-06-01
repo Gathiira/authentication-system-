@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'logging_middleware',
     'mfa',
     'notification',
+    'sms',
 ]
 
 MIDDLEWARE = [

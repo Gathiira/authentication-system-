@@ -26,6 +26,7 @@ urlpatterns = [
     path(api_version + 'accounts/', include('authentication.urls')),
     path(api_version + 'mfa/', include('mfa.urls')),
     path(api_version + 'notification/', include('notification.urls')),
+    path(api_version + 'sms/', include("sms.urls")),
 ]
 
 

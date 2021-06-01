@@ -9,6 +9,7 @@ class ServiceResponseManager:
     def __init__(self):
         self.service_urls = settings.SERVICE_URLS
         self.acl_service = self.service_urls['acl_service']
+        self.shared_service = self.service_urls['shared_service']
 
     def get_resource_server(self):
         url = self.acl_service + 'o/token/'
@@ -52,6 +53,25 @@ class ServiceResponseManager:
                 message = response.json()
                 log.error(message)
                 return False
+        except Exception as e:
+            log.error(e)
+            return False
+
+    def send_bulk_sms(self, payload):
+        url = self.shared_service + 'sms/createsmsrequest'
+        print(url)
+        try:
+            sms_payload = [{
+                "phone": payload['phone_number'][1:],
+                "message": payload['message']
+            }]
+            print(sms_payload)
+            response = requests.post(url=url, json=sms_payload)
+            print(response)
+            if response.status_code == 200:
+                return True
+            log.error(response.text)
+            return False
         except Exception as e:
             log.error(e)
             return False

@@ -7,12 +7,13 @@ password_checker = password_validator.PasswordManager()
 
 
 phone_regex = RegexValidator(
-    regex=r'^\+?254?\d{10,12}$',
-    message="Phone number must be entered in the format: '+254123456789'. Up to 12 digits allowed.")
+    regex=r'^\+?0?\d{9,9}$',
+    message="Phone number must be entered in the format: '0712345678'. Up to 10 digits allowed.")
 
 
-class GenericEmailSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+class GenericPhoneNumberSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(
+        required=True, validators=[phone_regex])
 
 
 MODULE_CHOICES = [
@@ -21,7 +22,7 @@ MODULE_CHOICES = [
 ]
 
 
-class ResendOtpSerializer(GenericEmailSerializer):
+class ResendOtpSerializer(GenericPhoneNumberSerializer):
     module = serializers.ChoiceField(choices=MODULE_CHOICES)
 
 
@@ -29,12 +30,12 @@ class VerifyOtpSerializer(ResendOtpSerializer):
     otp_code = serializers.CharField()
 
 
-class VerifyLoginOtpSerializer(GenericEmailSerializer):
+class VerifyLoginOtpSerializer(GenericPhoneNumberSerializer):
     otp_code = serializers.CharField()
     password = serializers.CharField()
 
 
-class LoginSerializer(GenericEmailSerializer):
+class LoginSerializer(GenericPhoneNumberSerializer):
     password = serializers.CharField()
     usertype = serializers.CharField()
 
@@ -45,10 +46,8 @@ GENDER = [
 ]
 
 
-class RegisterUserSerializer(GenericEmailSerializer):
-    username = serializers.CharField(required=True)
-    phone_number = serializers.CharField(
-        required=True, validators=[phone_regex])
+class RegisterUserSerializer(GenericPhoneNumberSerializer):
+    email = serializers.EmailField(required=True)
     f_name = serializers.CharField(required=True)
     m_name = serializers.CharField(required=True)
     l_name = serializers.CharField(required=True)

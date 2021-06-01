@@ -3,7 +3,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from .managers import UserManager
-from django.db.models import JSONField
 
 
 RECORD_STATUS = [
@@ -93,7 +92,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         (PROFESSIONAL, "PROFESSIONAL"),
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = models.CharField(max_length=20, unique=True)
+    phone_number = models.CharField(max_length=20, unique=True)
     email = models.EmailField(unique=True, max_length=255)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -117,10 +116,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "phone_number"
 
     def __str__(self):
-        return str(self.username)
+        return str(self.phone_number)
 
     def has_perm(self, perm, obj=None):
         return True
@@ -202,7 +201,6 @@ class PublicUserProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="public_user"
     )
-    phonenum = models.CharField(max_length=1000, blank=True, null=True)
     firstname = models.CharField(max_length=1000, blank=True, null=True)
     middlename = models.CharField(max_length=1000, blank=True, null=True)
     lastname = models.CharField(max_length=1000, blank=True, null=True)
@@ -362,7 +360,6 @@ class Staff(models.Model):
     )
     employeenum = models.CharField(
         max_length=255, unique=True, null=True, blank=True)
-    phonenum = models.CharField(max_length=255, null=True, blank=True)
     user_department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
@@ -406,7 +403,6 @@ class CodeVerification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     userid = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
-    phonenum = models.IntegerField(blank=True, null=True)
     code = models.IntegerField(blank=True, null=True)
     generationtime = models.DateTimeField()
     exptime = models.DateTimeField()
@@ -435,7 +431,6 @@ class GroupProfile(models.Model):
     name = models.CharField(max_length=50, unique=True)
     registration_number = models.CharField(
         max_length=255, null=True, blank=True)
-    phonenum = models.CharField(max_length=255, null=True, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     date_registered = models.DateTimeField(auto_now=True)
 

@@ -7,35 +7,35 @@ elif os.environ.get('DEBUG_MODE') == 'False':
     DEBUG = False
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': os.getenv('DATABASE_NAME'),
-#         'USER': os.environ.get('DATABASE_USERNAME'),
-#         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-#         'OPTIONS': {
-#             'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
-#         },
-#         'HOST': str(os.environ.get('DATABASE_HOST')),
-#         'PORT': int(os.environ.get('DATABASE_PORT')),
-#         'TEST': {
-#             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#             'NAME':  os.environ.get('DATABASE_NAME'),
-#             'USER': os.environ.get('DATABASE_USERNAME'),
-#             'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-#             'OPTIONS': {
-#                 'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
-#             },
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USERNAME'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'OPTIONS': {
+            'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
+        },
+        'HOST': str(os.environ.get('DATABASE_HOST')),
+        'PORT': int(os.environ.get('DATABASE_PORT')),
+        'TEST': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME':  os.environ.get('DATABASE_NAME'),
+            'USER': os.environ.get('DATABASE_USERNAME'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+            'OPTIONS': {
+                'options': '-c search_path={}'.format(os.environ.get('DATABASE_SCHEMA'))
+            },
 
-#         },
-#         'ATOMIC_REQUESTS': True
+        },
+        'ATOMIC_REQUESTS': True
 
-#     }
-# }
+    }
+}
 
 
-prod_db = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(prod_db)
+# prod_db = dj_database_url.config(conn_max_age=500)
+# DATABASES['default'].update(prod_db)
 
 OTP_EXPIRY_TIME = int(os.getenv('OTP_EXPIRY_TIME'))
 OTP_PASSWORD_RESET_TIME = int(os.getenv('OTP_PASSWORD_RESET_TIME'))
@@ -51,7 +51,8 @@ MINIMUM_PASSWORD_LENGTH = int(os.environ.get('MINIMUM_PASSWORD_LENGTH'))
 
 
 SERVICE_URLS = {
-    'acl_service': os.environ.get('TRANSFER_PROTOCOL') + '://' + os.environ.get('ACL_SERVICE') + os.environ.get('API_VERSION')
+    'acl_service': os.environ.get('TRANSFER_PROTOCOL') + '://' + os.environ.get('ACL_SERVICE') + os.environ.get('API_VERSION'),
+    'shared_service': os.environ.get('TRANSFER_PROTOCOL') + '://' + os.environ.get('SHARED_SERVICE') + os.environ.get('API_VERSION'),
 }
 
 
