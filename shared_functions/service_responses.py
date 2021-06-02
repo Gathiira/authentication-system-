@@ -59,15 +59,12 @@ class ServiceResponseManager:
 
     def send_bulk_sms(self, payload):
         url = self.shared_service + 'sms/createsmsrequest'
-        print(url)
         try:
             sms_payload = [{
-                "phone": payload['phone_number'][1:],
+                "phone": payload['phone'][1:],
                 "message": payload['message']
             }]
-            print(sms_payload)
             response = requests.post(url=url, json=sms_payload)
-            print(response)
             if response.status_code == 200:
                 return True
             log.error(response.text)

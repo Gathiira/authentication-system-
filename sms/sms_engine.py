@@ -1,11 +1,12 @@
 import africastalking
+from django.conf import settings
 
 
 class SMSEngine:
     def __init__(self):
         # Set your app credentials
-        self.username = "sandbox"
-        self.api_key = "a64126ccf815aaa09fb303cd5c579815fca6de74a1e02cca428d490391a82678"
+        self.username = settings.SMS_USERNAME
+        self.api_key = settings.SMS_API_KEY
 
         # Initialize the SDK
         africastalking.initialize(self.username, self.api_key)
@@ -15,10 +16,10 @@ class SMSEngine:
 
     def sendSMS(self, recipients, message):
         # Set your shortCode or senderId
-        sender = "SHARERIDE"
+        sender = settings.SMS_SENDERID
         try:
             # Thats it, hit send and we'll take care of the rest.
-            response = self.sms.send(message, recipients, sender)
+            response = self.sms.send(message, recipients)
             return response
         except Exception as e:
             return f'Encountered an error while sending: {str(e)}'

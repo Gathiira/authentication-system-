@@ -161,7 +161,7 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 # send sms
                 sms_payload = {
                     "phone": phone_number,
-                    "message": f"Your Ardhisasa verification code is: {otp_code}"
+                    "message": f"Your registration verification code is: {otp_code}"
                 }
                 sending_sms = service_response.send_bulk_sms(sms_payload)
                 if not sending_sms:
@@ -235,7 +235,7 @@ class CitizenAccountViewSet(viewsets.ViewSet):
             # sending sms
             sms_payload = {
                 "phone": phone_number,
-                "message": f"Your Ardhisasa login verification code is: {otp_code}"
+                "message": f"Your verification code is: {otp_code}"
             }
 
             sending_sms = service_response.send_bulk_sms(sms_payload)

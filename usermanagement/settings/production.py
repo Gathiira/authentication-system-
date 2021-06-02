@@ -34,8 +34,8 @@ DATABASES = {
 }
 
 
-# prod_db = dj_database_url.config(conn_max_age=500)
-# DATABASES['default'].update(prod_db)
+prod_db = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(prod_db)
 
 OTP_EXPIRY_TIME = int(os.getenv('OTP_EXPIRY_TIME'))
 OTP_PASSWORD_RESET_TIME = int(os.getenv('OTP_PASSWORD_RESET_TIME'))
@@ -75,3 +75,8 @@ if os.environ.get('DEBUG_MODE') == 'False':
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_FILE_PATH = os.path.join(BASE_DIR, '../logs/app-messages')
+
+
+SMS_USERNAME = os.environ.get('SMS_USERNAME')
+SMS_API_KEY = os.environ.get('SMS_API_KEY')
+SMS_SENDERID = os.environ.get('SMS_SENDERID')

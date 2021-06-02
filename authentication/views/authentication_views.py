@@ -108,7 +108,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
             # send sms
             sms_payload = {
                 "phone": phone_number,
-                "message": f"Your Ardhisasa login verification code is: {app_otp_code}"
+                "message": f"Your login verification code is: {app_otp_code}"
             }
 
             sending_sms = service_response.send_bulk_sms(sms_payload)
