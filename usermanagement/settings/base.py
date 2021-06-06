@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'mfa',
     'notification',
     'sms',
+    'fileupload',
 ]
 
 MIDDLEWARE = [
@@ -66,11 +67,6 @@ WSGI_APPLICATION = 'usermanagement.wsgi.application'
 Overriding default authentication class
 '''
 REST_FRAMEWORK = {
-    "NON_FIELD_ERRORS_KEY": "details",
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-    ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authentication.tokenbackend.SystemAuthentication',
     ),

@@ -1,9 +1,12 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 
-from shared_functions import password_validator
+from shared_functions import password_validator, service_responses
+
+from authentication import models as auth_models
 
 password_checker = password_validator.PasswordManager()
+service_response = service_responses.ServiceResponseManager()
 
 
 phone_regex = RegexValidator(
@@ -77,3 +80,26 @@ class RegisterUserSerializer(GenericPhoneNumberSerializer):
         )
 
         return obj
+
+
+class GetUserDetailSerializer(serializers.Serializer):
+    userid = serializers.CharField(required=True)
+
+
+class UserProfilePhotoSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.SerializerMethodField("get_user_profile_photo")
+
+    class Meta:
+        model = auth_models.User
+        fields = ["profile_photo"]
+
+    def get_user_profile_photo(self, obj):
+        headers = self.context
+        user_profile_photo = obj.profile_photo
+        photo_details = service_response.get_uploaded_doc(
+            user_profile_photo, headers)
+        if photo_details is False:
+            user_photo_url = ""
+        else:
+            user_photo_url = photo_details['url']
+        return user_photo_url

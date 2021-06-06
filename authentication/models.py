@@ -202,6 +202,7 @@ class PublicUserProfile(models.Model):
         related_name="public_user"
     )
     fullname = models.CharField(max_length=1000, blank=True, null=True)
+    profile_photo = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=1000, null=True, blank=True)
     mothermaiden = models.CharField(max_length=1000, blank=True, null=True)
     is_phoneverified = models.BooleanField(default=False)
