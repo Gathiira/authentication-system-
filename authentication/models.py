@@ -201,9 +201,7 @@ class PublicUserProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="public_user"
     )
-    firstname = models.CharField(max_length=1000, blank=True, null=True)
-    middlename = models.CharField(max_length=1000, blank=True, null=True)
-    lastname = models.CharField(max_length=1000, blank=True, null=True)
+    fullname = models.CharField(max_length=1000, blank=True, null=True)
     gender = models.CharField(max_length=1000, null=True, blank=True)
     mothermaiden = models.CharField(max_length=1000, blank=True, null=True)
     is_phoneverified = models.BooleanField(default=False)
@@ -212,7 +210,7 @@ class PublicUserProfile(models.Model):
     date_registered = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.userid.email)
+        return str(self.userid.phone_number)
 
 
 class TeamCategory(models.Model):

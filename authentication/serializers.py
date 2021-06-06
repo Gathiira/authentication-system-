@@ -26,10 +26,6 @@ class ResendOtpSerializer(GenericPhoneNumberSerializer):
     module = serializers.ChoiceField(choices=MODULE_CHOICES)
 
 
-class VerifyOtpSerializer(ResendOtpSerializer):
-    otp_code = serializers.CharField()
-
-
 class VerifyLoginOtpSerializer(GenericPhoneNumberSerializer):
     otp_code = serializers.CharField()
     password = serializers.CharField()
@@ -48,13 +44,10 @@ GENDER = [
 
 class RegisterUserSerializer(GenericPhoneNumberSerializer):
     email = serializers.EmailField(required=True)
-    f_name = serializers.CharField(required=True)
-    m_name = serializers.CharField(required=True)
-    l_name = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
     gender = serializers.ChoiceField(choices=GENDER)
     password = serializers.CharField(required=True)
     confirm_password = serializers.CharField(required=True)
-    location = serializers.CharField(required=True)
 
     def validate(self, obj):
         pass1 = obj['password']

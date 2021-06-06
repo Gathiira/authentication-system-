@@ -67,7 +67,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     status=status.HTTP_401_UNAUTHORIZED)
 
             try:
-                user_details = reference_model.objects.get(
+                reference_model.objects.get(
                     userid_id=user_instance)
             except Exception as e:
                 log.info(e)
@@ -91,19 +91,6 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     {"details": "Otp generation failed"},
                     status=status.HTTP_400_BAD_REQUEST)
             app_otp_code = otp_response['code']
-
-            # notification_payload = {
-            #     "subject": "LOGIN VERIFICATION CODE",
-            #     "recipients": [email],
-            #     "message": f"Your login verification code is {app_otp_code}",
-            # }
-            # #  send email
-
-            # sending_mail = service_response.send_email(notification_payload)
-            # if not sending_mail:
-            #     return Response(
-            #         {"details": "Failed to send mail. Check your mail or internet connection"},
-            #         status=status.HTTP_401_UNAUTHORIZED)
 
             # send sms
             sms_payload = {
@@ -156,7 +143,6 @@ class AuthenticationViewSet(viewsets.ViewSet):
 
             validated_otp, response_inf = service_response.verify_otp_code(
                 otp_params)
-            print(response_inf)
             if not validated_otp:
                 return Response(
                     {"details": response_inf['details']},

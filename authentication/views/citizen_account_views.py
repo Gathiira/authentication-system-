@@ -1,15 +1,15 @@
 import logging
+import requests
 from django.contrib.auth.models import Group
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from oauth2_provider.models import get_application_model
 from django.contrib.auth import authenticate, get_user_model
-from django.apps import apps as system_apps
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
-from rest_framework.utils.serializer_helpers import ReturnList
 
 from authentication import serializers as auth_serializers
 from authentication import models as auth_models
@@ -39,32 +39,28 @@ class CitizenAccountViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             phone_number = serializer.data.get('phone_number')
             email = serializer.data.get('email')
-            f_name = serializer.data.get('f_name')
-            m_name = serializer.data.get('m_name')
-            l_name = serializer.data.get('l_name')
+            user_name = serializer.data.get('name')
             gender = serializer.data.get('gender')
             hashed_password = serializer.validated_data.get('hashed_password')
-            location = serializer.data.get('location')
 
             with transaction.atomic():
-                user_query = get_user_model().objects.filter(
-                    Q(email=email) | Q(phone_number=phone_number))
+                user_query = get_user_model().objects.filter(Q(phone_number=phone_number))
                 if user_query.exists():
                     user_details = user_query.first()
                     if user_details.is_active:
                         return Response(
                             {
-                                "details": "User already registered. Kindly login to continue",
+                                "details": "Phone number already registered. Kindly login.",
                                 "phone_number": phone_number,
-                                "EMAIL_VERIFICATION": True,
+                                "PHONE_VERIFICATION": True,
                             },
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     return Response(
                         {
-                            "details": "User already registered. Awaiting phone number verification",
+                            "details": "Phone number already registered. Awaiting verification",
                             "phone_number": phone_number,
-                            "EMAIL_VERIFICATION": False
+                            "PHONE_VERIFICATION": False
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
@@ -106,9 +102,7 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 try:
                     profile_payload = {
                         "userid": new_user,
-                        "firstname": f_name,
-                        "middlename": m_name,
-                        "lastname": l_name,
+                        "fullname": user_name,
                         "gender": gender,
                         'is_passwordverified': True
                     }
@@ -122,9 +116,9 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                         {"details": "Failed to update profile. Try again later"},
                         status=status.HTTP_400_BAD_REQUEST)
 
-                # new_user.is_active = True
+                new_user.is_active = True
                 new_user.password = hashed_password
-                new_user.save(update_fields=['is_active', 'password'])
+                new_user.save()
 
                 # send otp for verification
                 otp_payload = {
@@ -145,35 +139,22 @@ class CitizenAccountViewSet(viewsets.ViewSet):
 
                 otp_code = otp_response['code']
 
-                #  send email
-                # notification_payload = {
-                #     "subject": "VERIFICATION CODE",
-                #     "recipients": [email],
-                #     "message": f"Your registration verification code is {otp_code}",
-                # }
-                # sending_mail = service_response.send_email(
-                #     notification_payload)
-                # if not sending_mail:
-                #     return Response(
-                #         {"details": "Failed to send mail. Check your mail or internet connection"},
-                #         status=status.HTTP_401_UNAUTHORIZED)
-
                 # send sms
                 sms_payload = {
                     "phone": phone_number,
                     "message": f"Your registration verification code is: {otp_code}"
                 }
-                sending_sms = service_response.send_bulk_sms(sms_payload)
-                if not sending_sms:
-                    return Response(
-                        {"details": "Failed to send sms. Check your phone number"},
-                        status=status.HTTP_401_UNAUTHORIZED)
+                # sending_sms = service_response.send_bulk_sms(sms_payload)
+                # if not sending_sms:
+                #     return Response(
+                #         {"details": "Failed to send sms. Check your phone number"},
+                #         status=status.HTTP_401_UNAUTHORIZED)
 
                 if not settings.DEBUG:
                     otp_code = None
                 return Response(
                     {
-                        "details": "Account Created. Kindly proceed to verify email.",
+                        "details": "Account Created. Kindly proceed to verify phone number.",
                         "otp_code": otp_code
                     })
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
@@ -261,60 +242,74 @@ class CitizenAccountViewSet(viewsets.ViewSet):
     )
     def verify_otp(self, request):
         payload = request.data
-        serializer = auth_serializers.VerifyOtpSerializer(
-            data=payload, many=False)
+        serializer = auth_serializers.VerifyLoginOtpSerializer(data=payload)
         if serializer.is_valid(raise_exception=True):
-            phone_number = serializer.data.get('phone_number')
-            otp_code = serializer.data.get('otp_code')
-            module = serializer.data.get('module')
+            phone_number = serializer.data.get("phone_number")
+            password = serializer.data.get("password")
+            otp_code = serializer.data.get("otp_code")
+
             try:
                 user_details = get_user_model().objects.get(phone_number=phone_number)
             except Exception as e:
                 log.error(e)
-                return Response({"details": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"details": "User not found"},
+                    status=status.HTTP_404_NOT_FOUND)
 
+            otp_params = {
+                "user_id": str(user_details.id),
+                "otp_code": otp_code,
+                "module": "REGISTRATION_SMS_VERIFICATION"
+            }
+
+            validated_otp, response_inf = service_response.verify_otp_code(
+                otp_params)
+            if not validated_otp:
+                return Response(
+                    {"details": response_inf['details']},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+            user = authenticate(phone_number=phone_number, password=password)
+            if not bool(user):
+                return Response(
+                    {"details": "Invalid phone number or password"},
+                    status=status.HTTP_401_UNAUTHORIZED)
             try:
-                profile_details = user_details.public_user
+                selected_user = get_application_model().objects.get(user=user_details)
             except Exception as e:
                 log.error(e)
                 return Response(
-                    {'details': "Invalid Profile Details"},
-                    status=status.HTTP_404_NOT_FOUND)
+                    {"details": "Invalid credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED)
+            server_address = service_response.get_resource_server()
 
-            module_code = "LOGIN"
-            if module == "REGISTER":
-                if profile_details.is_emailverified:
-                    return Response(
-                        {"details": "Email is already verified"},
-                        status=status.HTTP_400_BAD_REQUEST)
+            r = requests.post(
+                server_address,
+                data={
+                    "grant_type": 'password',
+                    'username': phone_number,
+                    "password": password,
+                    'client_id': selected_user.client_id,
+                    'client_secret': selected_user.client_secret
+                }
+            )
 
-                module_code = 'REGISTRATION_SMS_VERIFICATION'
-
-            verification_payload = {
-                "user_id": str(user_details.id),
-                "otp_code": otp_code,
-                "module": module_code
+            response_data = r.json()
+            if r.status_code != 200:
+                return Response(
+                    {"details": response_data['error_description']},
+                    status=status.HTTP_401_UNAUTHORIZED)
+            user_info = {
+                "access_token": response_data['access_token'],
+                "expires_in": response_data['expires_in'],
+                "token_type": response_data['token_type'],
+                "refresh_token": response_data['refresh_token'],
+                "jwt": oauth2user.generate_jwt_token(user_details.id)
             }
-            validate_otp, messagedata = service_response.verify_otp_code(
-                verification_payload)
-            if not validate_otp:
-                return Response(
-                    {"details": messagedata['details']},
-                    status=status.HTTP_400_BAD_REQUEST)
 
-            if module == "REGISTER":
-                user_details.is_active = True
-                user_details.save(update_fields=['is_active'])
+            profile_details = user_details.public_user
+            profile_details.is_phoneverified = True
+            profile_details.save()
 
-                profile_details.is_phoneverified = True
-                profile_details.save(update_fields=['is_phoneverified'])
-
-                return Response(
-                    {'details': 'Phone number successfully verified. Kindly proceed to login'},
-                    status=status.HTTP_200_OK)
-
-            return Response(
-                {'details': 'Otp Verified. Kindly proceed to login'},
-                status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"details": user_info}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

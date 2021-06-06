@@ -69,9 +69,7 @@ class ApplicationUser:
         except Exception:
             return system_user_details
 
-        firstname = ''
-        middlename = ''
-        lastname = ''
+        fullname = ''
         organization_bio_data = {}
 
         if hasattr(user_details, 'user_department'):
@@ -112,20 +110,14 @@ class ApplicationUser:
 
             # except Exception:
 
-        if hasattr(user_details, 'firstname'):
-            firstname = user_details.firstname
+        if hasattr(user_details, 'fullname'):
+            fullname = user_details.fullname
         elif hasattr(user_details, 'name'):
-            firstname = user_details.name
-        if hasattr(user_details, 'middlename'):
-            middlename = user_details.middlename
-        if hasattr(user_details, 'lastname'):
-            lastname = user_details.lastname
+            fullname = user_details.name
 
         system_user_details.append({
             "userid": str(user_details_id),
-            "firstname": firstname,
-            "middlename": middlename,
-            "lastname": lastname,
+            "fullname": fullname,
             "organization": organization_bio_data
         })
         return system_user_details
@@ -153,9 +145,7 @@ class ApplicationUser:
     def generate_jwt_token(self, userid):
         userprofile = self.fetch_user_details_info(userid)
         userroles = self.fetch_user_groups(userid)
-        firstname = userprofile[0]['firstname']
-        middlename = userprofile[0]['middlename']
-        lastname = userprofile[0]['lastname']
+        fullname = userprofile[0]['fullname']
         userprofileid = userprofile[0]['userid']
         organization = userprofile[0]['organization']
         current_timezone = pytz.timezone(settings.TIME_ZONE)
@@ -164,9 +154,7 @@ class ApplicationUser:
         access_token_issued_at = datetime.now(current_timezone)
         payload = {
             "user": str(userprofileid),
-            "firstname": str(firstname),
-            "middlename": str(middlename),
-            "lastname": str(lastname),
+            "fullname": str(fullname),
             "organization": organization,
             "roles": userroles,
             'exp': access_token_expiry,
