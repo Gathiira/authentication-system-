@@ -13,10 +13,12 @@ from oauth2_provider.views.generic import ProtectedResourceView
 
 
 from authentication import serializers as auth_serializers
-from shared_functions import service_responses, time_functions, authsystemuser
+from shared_functions import (
+    service_responses, time_functions, authsystemuser, system_utils)
 
 service_response = service_responses.ServiceResponseManager()
 time_function = time_functions
+system_util = system_utils.SystemServiceManager()
 oauth2user = authsystemuser.ApplicationUser()
 
 application_label = 'authentication'
@@ -160,10 +162,11 @@ class AuthenticationViewSet(viewsets.ViewSet):
                 return Response(
                     {"details": "Invalid credentials"},
                     status=status.HTTP_401_UNAUTHORIZED)
-            server_address = service_response.get_resource_server()
+            server_address = service_response.get_current_server_url(request)
+            oauth2_url = server_address + '/o/token/'
 
             r = requests.post(
-                server_address,
+                oauth2_url,
                 data={
                     "grant_type": 'password',
                     'username': phone_number,
@@ -200,3 +203,72 @@ class AuthorizationViewSet(ProtectedResourceView, viewsets.ViewSet):
     )
     def authentication_status(self, request):
         return Response({"details": "success"})
+
+    @action(methods=["POST"],
+            detail=False,
+            url_path="logout",
+            url_name="logout")
+    def logout(self, request):
+        authorization_token = request.headers.get('Authorization', b'')
+        auth_token = authorization_token.split()
+        logged_in_user = request.user
+        logout_status, message = system_util.logout_user(
+            request, auth_token[1], logged_in_user)
+        if logout_status:
+            return Response({"details": message}, status=status.HTTP_200_OK)
+        return Response({"details": message}, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"],
+            detail=False,
+            url_path="refresh-token",
+            url_name="refresh-token")
+    def refresh_token(self, request):
+        payload = request.data
+        serializer = auth_serializers.RefreshTokenSerializer(
+            data=payload, many=False)
+        if serializer.is_valid():
+            refresh_token = payload['refresh_token']
+            refresh_token_details = get_refresh_token_model(). \
+                objects.filter(token=refresh_token)
+            refresh_token_exists = refresh_token_details.exists()
+            if refresh_token_exists:
+                refresh_token_user = refresh_token_details.first()
+                token_user = refresh_token_user.user_id
+                selected_user = get_application_model().objects.get(user_id=token_user)
+                server_address = service_response.get_current_server_url(
+                    request)
+                oauth2_url = server_address + '/o/token/'
+                r = requests.post(
+                    oauth2_url,
+                    data={
+                        'grant_type': 'refresh_token',
+                        'client_id': selected_user.client_id,
+                        'client_secret': selected_user.client_secret,
+                        'refresh_token': refresh_token
+                    },
+                )
+                responsedata = r.json()
+                if r.status_code == 200:
+                    userinfo = {
+                        "access_token": responsedata['access_token'],
+                        "expires_in": responsedata['expires_in'],
+                        "token_type": responsedata['token_type'],
+                        "refresh_token": responsedata['refresh_token'],
+                        "jwt": oauth2user.generate_jwt_token(token_user)
+                    }
+                    return Response(
+                        {'details': userinfo},
+                        status=status.HTTP_200_OK)
+                else:
+                    return Response(
+                        {'details': responsedata['error']},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                return Response(
+                    {'details': 'Invalid Refresh Token Passed'},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response({'details': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)

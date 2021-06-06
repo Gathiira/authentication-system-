@@ -31,6 +31,10 @@ class VerifyLoginOtpSerializer(GenericPhoneNumberSerializer):
     password = serializers.CharField()
 
 
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField(required=True)
+
+
 class LoginSerializer(GenericPhoneNumberSerializer):
     password = serializers.CharField()
     usertype = serializers.CharField()

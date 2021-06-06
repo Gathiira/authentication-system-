@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 api_version = 'api/v1/'
 
 urlpatterns = [
-    path(api_version + 'o/', include('oauth2_provider.urls',
-                                     namespace='oauth2_provider')),
+    path('o/', include('oauth2_provider.urls',
+                       namespace='oauth2_provider')),
     path(api_version + 'accounts/', include('authentication.urls')),
     path(api_version + 'mfa/', include('mfa.urls')),
     path(api_version + 'notification/', include('notification.urls')),
