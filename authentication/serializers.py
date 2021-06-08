@@ -94,12 +94,11 @@ class UserProfilePhotoSerializer(serializers.ModelSerializer):
         fields = ["profile_photo"]
 
     def get_user_profile_photo(self, obj):
-        headers = self.context
-        user_profile_photo = obj.profile_photo
-        photo_details = service_response.get_uploaded_doc(
-            user_profile_photo, headers)
+        photo_id = obj.profile_photo
+        photo_details = service_response.get_document_details(
+            photo_id)
         if photo_details is False:
             user_photo_url = ""
         else:
-            user_photo_url = photo_details['url']
+            user_photo_url = photo_details['file']
         return user_photo_url

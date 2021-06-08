@@ -94,6 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.EmailField(unique=True, max_length=255)
+    profile_photo = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -101,7 +102,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         UserCategoryType, on_delete=models.CASCADE, blank=True, null=True
     )
     is_defaultpassword = models.BooleanField(default=False)
-    profile_photo = models.CharField(max_length=255, null=True, blank=True)
     enable_phone_notification = models.BooleanField(null=True, blank=True)
     enable_email_notification = models.BooleanField(null=True, blank=True)
     enable_system_notification = models.BooleanField(default=True)
@@ -202,7 +202,6 @@ class PublicUserProfile(models.Model):
         related_name="public_user"
     )
     fullname = models.CharField(max_length=1000, blank=True, null=True)
-    profile_photo = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=1000, null=True, blank=True)
     mothermaiden = models.CharField(max_length=1000, blank=True, null=True)
     is_phoneverified = models.BooleanField(default=False)

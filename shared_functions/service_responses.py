@@ -78,3 +78,17 @@ class ServiceResponseManager:
         except Exception as e:
             log.error(e)
             return False
+
+    def get_document_details(self, doc_id):
+        url = self.acl_service + 'fileupload/get-file'
+        try:
+            file_param = {
+                "file": doc_id
+            }
+            response = requests.get(url=url, params=file_param)
+            if response.status_code == 200:
+                return response.json()
+            return False
+        except Exception as e:
+            log.error(e)
+            return False

@@ -134,6 +134,7 @@ class UserViewSet(ProtectedResourceView, viewsets.ModelViewSet):
     def create_profile_photo(self, request):
         payload = request.data
         account_user = request.user
+        print(account_user)
         serializer = auth_serializers. \
             ProfilePhotoSerializer(data=request.data)
         if serializer.is_valid():
