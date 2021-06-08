@@ -82,7 +82,7 @@ class AuthenticationViewSet(viewsets.ViewSet):
                 "user": str(user_instance.id),
                 "send_to": phone_number,
                 "mode": "sms",
-                "module": "LOGIN",
+                "module": "VERIFICATION_CODE",
                 "expiry_time": settings.OTP_EXPIRY_TIME
             }
             otp_generated, otp_response = service_response.generate_otp_code(
@@ -100,11 +100,11 @@ class AuthenticationViewSet(viewsets.ViewSet):
                 "message": f"Your login verification code is: {app_otp_code}"
             }
 
-            sending_sms = service_response.send_bulk_sms(sms_payload)
-            if not sending_sms:
-                return Response(
-                    {"details": "Failed to send sms. Check your phone number."},
-                    status=status.HTTP_401_UNAUTHORIZED)
+            # sending_sms = service_response.send_bulk_sms(sms_payload)
+            # if not sending_sms:
+            #     return Response(
+            #         {"details": "Failed to send sms. Check your phone number."},
+            #         status=status.HTTP_401_UNAUTHORIZED)
 
             if not settings.DEBUG:
                 app_otp_code = None
@@ -114,82 +114,6 @@ class AuthenticationViewSet(viewsets.ViewSet):
                     "otp_code": app_otp_code
                 })
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
-
-    @action(
-        methods=['POST'],
-        detail=False,
-        url_path='verify-login-otp',
-        url_name='verify-login-otp'
-    )
-    def verify_login_otp(self, request):
-        payload = request.data
-        serializer = auth_serializers.VerifyLoginOtpSerializer(data=payload)
-        if serializer.is_valid(raise_exception=True):
-            phone_number = serializer.data.get("phone_number")
-            password = serializer.data.get("password")
-            otp_code = serializer.data.get("otp_code")
-
-            try:
-                user_details = get_user_model().objects.get(phone_number=phone_number)
-            except Exception as e:
-                log.error(e)
-                return Response(
-                    {"details": "User not found"},
-                    status=status.HTTP_404_NOT_FOUND)
-
-            otp_params = {
-                "user_id": str(user_details.id),
-                "otp_code": otp_code,
-                "module": "LOGIN"
-            }
-
-            validated_otp, response_inf = service_response.verify_otp_code(
-                otp_params)
-            if not validated_otp:
-                return Response(
-                    {"details": response_inf['details']},
-                    status=status.HTTP_400_BAD_REQUEST)
-
-            user = authenticate(phone_number=phone_number, password=password)
-            if not bool(user):
-                return Response(
-                    {"details": "Invalid phone number or password"},
-                    status=status.HTTP_401_UNAUTHORIZED)
-            try:
-                selected_user = get_application_model().objects.get(user=user_details)
-            except Exception as e:
-                log.error(e)
-                return Response(
-                    {"details": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED)
-            server_address = service_response.get_current_server_url(request)
-            oauth2_url = server_address + '/o/token/'
-
-            r = requests.post(
-                oauth2_url,
-                data={
-                    "grant_type": 'password',
-                    'username': phone_number,
-                    "password": password,
-                    'client_id': selected_user.client_id,
-                    'client_secret': selected_user.client_secret
-                }
-            )
-
-            response_data = r.json()
-            if r.status_code != 200:
-                return Response(
-                    {"details": response_data['error_description']},
-                    status=status.HTTP_401_UNAUTHORIZED)
-            user_info = {
-                "access_token": response_data['access_token'],
-                "expires_in": response_data['expires_in'],
-                "token_type": response_data['token_type'],
-                "refresh_token": response_data['refresh_token'],
-                "jwt": oauth2user.generate_jwt_token(user_details.id)
-            }
-            return Response({"details": user_info}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AuthorizationViewSet(ProtectedResourceView, viewsets.ViewSet):

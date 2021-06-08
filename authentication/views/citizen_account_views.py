@@ -47,24 +47,27 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 user_query = get_user_model().objects.filter(Q(phone_number=phone_number))
                 if user_query.exists():
                     user_details = user_query.first()
-                    if user_details.is_active:
+                    try:
+                        user_profile = user_details.public_user
+                        if user_profile.is_phoneverified:
+                            return Response(
+                                {
+                                    "details": "Phone number already registered. Kindly login.",
+                                    "phone_number": phone_number,
+                                    "PHONE_VERIFICATION": True,
+                                },
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
                         return Response(
                             {
-                                "details": "Phone number already registered. Kindly login.",
+                                "details": "Phone number already registered. Awaiting verification",
                                 "phone_number": phone_number,
-                                "PHONE_VERIFICATION": True,
+                                "PHONE_VERIFICATION": False
                             },
                             status=status.HTTP_400_BAD_REQUEST
                         )
-                    return Response(
-                        {
-                            "details": "Phone number already registered. Awaiting verification",
-                            "phone_number": phone_number,
-                            "PHONE_VERIFICATION": False
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
+                    except:
+                        pass
                 try:
                     user_type_instance = auth_models.UserCategoryType \
                         .objects.get(name='PUBLICUSER')
@@ -125,7 +128,7 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                     "user": str(new_user.id),
                     "send_to": phone_number,
                     "mode": "sms",
-                    "module": "REGISTRATION_SMS_VERIFICATION",
+                    "module": "VERIFICATION_CODE",
                     "expiry_time": settings.REGISTRATION_OTP_EXPIRY_TIME
                 }
                 otp_generated, otp_response = service_response.generate_otp_code(
@@ -167,11 +170,10 @@ class CitizenAccountViewSet(viewsets.ViewSet):
     )
     def resend_otp(self, request):
         payload = request.data
-        serializer = auth_serializers.ResendOtpSerializer(
+        serializer = auth_serializers.GenericPhoneNumberSerializer(
             data=payload, many=False)
         if serializer.is_valid(raise_exception=True):
             phone_number = serializer.data.get('phone_number')
-            module = serializer.data.get('module')
             try:
                 user_details = get_user_model().objects.get(phone_number=phone_number)
             except Exception as e:
@@ -179,28 +181,19 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 return Response({"details": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
             try:
-                profile_details = user_details.public_user
+                user_details.public_user
             except Exception as e:
                 log.error(e)
                 return Response(
                     {'details': "Invalid Profile Details"},
                     status=status.HTTP_404_NOT_FOUND)
 
-            module_code = "LOGIN"
-            if module == "REGISTER":
-                if profile_details.is_phoneverified:
-                    return Response(
-                        {"details": "Phone number is already verified"},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-                module_code = 'REGISTRATION_SMS_VERIFICATION'
-
             # send otp for verification
             otp_payload = {
                 "user": str(user_details.id),
                 "send_to": phone_number,
                 "mode": "sms",
-                "module": module_code,
+                "module": 'VERIFICATION_CODE',
                 "expiry_time": settings.REGISTRATION_OTP_EXPIRY_TIME
             }
             otp_generated, otp_response = service_response.generate_otp_code(
@@ -219,11 +212,11 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 "message": f"Your verification code is: {otp_code}"
             }
 
-            sending_sms = service_response.send_bulk_sms(sms_payload)
-            if not sending_sms:
-                return Response(
-                    {"details": "Failed to send sms. Check your phone number."},
-                    status=status.HTTP_401_UNAUTHORIZED)
+            # sending_sms = service_response.send_bulk_sms(sms_payload)
+            # if not sending_sms:
+            #     return Response(
+            #         {"details": "Failed to send sms. Check your phone number."},
+            #         status=status.HTTP_401_UNAUTHORIZED)
 
             if not settings.DEBUG:
                 otp_code = None
@@ -259,7 +252,7 @@ class CitizenAccountViewSet(viewsets.ViewSet):
             otp_params = {
                 "user_id": str(user_details.id),
                 "otp_code": otp_code,
-                "module": "REGISTRATION_SMS_VERIFICATION"
+                "module": "VERIFICATION_CODE"
             }
 
             validated_otp, response_inf = service_response.verify_otp_code(
@@ -281,10 +274,11 @@ class CitizenAccountViewSet(viewsets.ViewSet):
                 return Response(
                     {"details": "Invalid credentials"},
                     status=status.HTTP_401_UNAUTHORIZED)
-            server_address = service_response.get_resource_server()
+            server_address = service_response.get_current_server_url(request)
+            oauth2_url = server_address + '/o/token/'
 
             r = requests.post(
-                server_address,
+                oauth2_url,
                 data={
                     "grant_type": 'password',
                     'username': phone_number,
